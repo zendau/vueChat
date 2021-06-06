@@ -15,7 +15,6 @@ app.use(function(req, res, next) {
 })
 
 app.get('/', (req, res) => {
-  io.emit("message", "test")  
   res.json("ok")
 });
 
@@ -23,6 +22,13 @@ app.get('/', (req, res) => {
 // Вывод сообщение что был подключен пользователь по сокету
 io.on("connection", (socket) => {
     console.log("user connect")
+    socket.on('newMessage', (msg) => {
+        console.log(`message ${msg[1]} from user ${msg[0]}`)
+        io.emit("message", msg)  
+    })
+    socket.on('disconnect', () => {
+        console.log('user disconnected');
+      });
 })
 
 

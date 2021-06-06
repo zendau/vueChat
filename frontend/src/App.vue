@@ -1,8 +1,8 @@
 <template>
   <div>
       <div id="nav">
-      <router-link to="/">Home</router-link> |
-      <router-link to="/about">About</router-link>
+      <router-link to="/">Login</router-link> |
+      <router-link to="/chat">Chat</router-link>
     </div>
     <router-view/>
   </div>
@@ -31,24 +31,3 @@
 }
 </style>
 
-<script>
-
-import {io} from "socket.io-client"
-import {onMounted} from "vue"
-
-export default {
-
-  setup() {
-
-    onMounted(() => {
-      const socket = io("http://172.21.112.1/")
-      socket.on('message', (data) => {
-        console.log(data)
-      })
-    })
-
-
-    return
-  }
-}
-</script>
