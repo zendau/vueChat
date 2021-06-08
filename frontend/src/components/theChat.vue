@@ -1,6 +1,11 @@
 <template>
   <div>
+    <h1>Users online</h1>
+    <p v-for="user in users" :key="user.id">{{user.login}}</p>
     <h1>Send message</h1>
+    <h2>Hello {{userLogin}}</h2>
+    <h2>Room id - {{roomId}}</h2>
+    <h2>User id - {{userId}}</h2>
     <input type="text" placeholder="message" v-model="userMessage">
     <button @click="sendMessage">Send</button>
     <div v-if="messages.length !== 0">
@@ -9,7 +14,7 @@
         <li v-for="(item, index) in messages" :key="index" class="message">
           <p 
             class="login" 
-            :class="item['login'] === userLogin ? 'login--active' : ''"
+            :class="item['id'] === userId ? 'login--active' : ''"
             >{{item["login"]}}:
           </p>
           <p>{{item["message"]}}</p>
@@ -22,8 +27,8 @@
 
 <script>
 
-import {io} from "socket.io-client"
-import {onMounted, ref, reactive} from "vue"
+
+import {onMounted, ref, reactive, inject, computed} from "vue"
 import {useStore} from "vuex"
 import {useRouter} from "vue-router"
 
@@ -34,46 +39,50 @@ export default {
     let socket = null
 
     const userMessage = ref(null)
-    const userLogin = ref(null)
     const store = useStore()
     const router = useRouter()
 
 
     const messages = reactive(store.state.messages)
 
+    const roomId = store.state.roomId
+    const userLogin = store.state.userLogin
+    const userId = ref(null)
 
     onMounted(() => {
 
-      userLogin.value = store.state.userLogin
-
-      if (userLogin.value === null) {
+      
+      if (userLogin === null) {
         router.push("/")
       } else {
-        socket = io("http://172.21.112.1:80")
-            socket.on("message", (data) => {
-              data.push(getTime())
-              store.commit("pushMessage", data)
-            })
+        socket = inject("SocketClass")
+
+        socket.createRoom(roomId, userLogin)
+        socket.resiveMessage(store)
+        socket.getUserId(userId, store)
+        socket.getUsers(store)
       }
+
+     
 
 
     })
 
     function sendMessage() {
-      socket.emit("newMessage", [store.state.userLogin, this.userMessage])
+      socket.sendMessage([this.userLogin, this.userMessage, this.roomId, this.userId])
       this.userMessage = ""
     }
 
-    function getTime() {
-      return new Date().getHours() + ":" + new Date().getMinutes() + ":" + new Date().getSeconds() 
-    }
+    
 
     return {
       userMessage,
       userLogin,
       sendMessage,
       messages,
-      getTime
+      roomId,
+      userId,
+      users: computed(() => store.state.users)
     }
   }
 }

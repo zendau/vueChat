@@ -8,6 +8,21 @@
   </div>
 </template>
 
+<script>
+
+import {onMounted, provide} from "vue"
+import {Socket} from "./Socket"
+
+export default {
+  setup() {
+    onMounted(() => {
+      const SocketClass = new Socket()
+      provide("SocketClass", SocketClass)
+    })
+  },
+}
+</script>
+
 <style lang="scss">
 #app {
   font-family: Avenir, Helvetica, Arial, sans-serif;

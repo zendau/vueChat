@@ -2,6 +2,8 @@ const express = require('express')
 const app = express()
 const http = require('http').Server(app)
 
+const {addUser, getRoomUser} = require("./users")
+
 const io = require('socket.io')(http, {
     cors: {
       credentials: true
@@ -22,10 +24,33 @@ app.get('/', (req, res) => {
 // Вывод сообщение что был подключен пользователь по сокету
 io.on("connection", (socket) => {
     console.log("user connect")
-    socket.on('newMessage', (msg) => {
-        console.log(`message ${msg[1]} from user ${msg[0]}`)
-        io.emit("message", msg)  
+    console.log(socket.rooms)
+
+    socket.on("room", (userData) => {
+
+        const user = {
+            id: socket.id,
+            room: userData[0],
+            login: userData[1]
+        }
+
+        addUser(user)
+        socket.join(user.room)
+        io.to(user.room).emit("getUserId", user.id)
+        io.to(user.room).emit("getUsers", getRoomUser(user.room))
+
+            
+        
     })
+
+    socket.on('newMessage', (msg) => {
+        console.log(`message ${msg[1]} from user ${msg[0]}, room ${msg[2]}`)
+        console.log("msg", msg)
+        io
+            .to(msg[2]+"")
+            .emit("message", msg)  
+    })
+
     socket.on('disconnect', () => {
         console.log('user disconnected');
       });

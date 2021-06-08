@@ -2,7 +2,12 @@
   <div>
       <form>
           <input type="text" placeholder="Print your login" v-model="login">
-          <button @click.prevent="userLogin">Start</button>
+          <input type="text" placeholder="Print id room" v-model="roomId">
+          <button  
+            :status=checkRoomId 
+            @click.prevent="userLogin">
+            {{checkRoomId ? "Enter the chat" : "Create new room"}}
+        </button>
       </form>
   </div>
 </template>
@@ -14,7 +19,8 @@ import {mapMutations} from "vuex"
 export default {
     data() {
         return {
-            login: ""
+            login: "",
+            roomId: ""
         }
     },
     methods: {
@@ -22,8 +28,18 @@ export default {
             "authUser"
         ]),
         userLogin() {
-            this.authUser([this.login])
-            this.$router.push("/chat")
+            if (!this.checkRoomId) {
+                this.roomId = Date.now()
+            } else {
+                console.log(this.roomId)
+                this.authUser([this.login, this.roomId])
+                this.$router.push("/chat")
+            }
+        }
+    },
+    computed: {
+        checkRoomId() {
+            return this.roomId !== ""
         }
     }
 }
