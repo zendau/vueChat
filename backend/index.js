@@ -2,7 +2,7 @@ const express = require('express')
 const app = express()
 const http = require('http').Server(app)
 
-const {addUser, getRoomUser, getUserById, userLeaveChat} = require("./users")
+const initSocket = require("./initSocket")
 
 const io = require('socket.io')(http, {
     cors: {
@@ -21,55 +21,15 @@ app.get('/', (req, res) => {
 });
 
 
-// Вывод сообщение что был подключен пользователь по сокету
-io.on("connection", (socket) => {
-    console.log("user connect")
-    console.log(socket.rooms)
-
-    socket.on("room", (userData) => {
-
-        const user = {
-            id: socket.id,
-            room: userData[0],
-            login: userData[1]
-        }
-
-        addUser(user)
-        socket.join(user.room)
-        io.to(user.room).emit("getUserId", user.id)
-        io.to(user.room).emit("getUsers", getRoomUser(user.room))
-        io.to(user.room).emit("message", `${user.login} has join to chat`)  
-
-            
-        
-    })
-
-    socket.on('newMessage', (msg) => {
-        console.log(`message ${msg[1]} from user ${msg[0]}, room ${msg[2]}`)
-        console.log("msg", msg)
-        io.to(msg[2]+"").emit("message", msg)  
-    })
-
-    socket.on('disconnect', () => {
-        console.log(`user ${socket.id} disconnected`)
-        const user = getUserById(socket.id)
-
-        if (user) {
-            userLeaveChat(user.id)
-            io.to(user.room).emit("message", `${user.login} has left the chat`)  
-            io.to(user.room).emit("getUsers", getRoomUser(user.room))
-        }   
-      });
-})
-
-
 const PORT = process.env.PORT || 80
 
-const ifaces = require('os').networkInterfaces();
-    const localhost = Object.keys(ifaces).reduce((host,ifname) => {
-        let iface = ifaces[ifname].find(iface => !('IPv4' !== iface.family || iface.internal !== false));
-        return iface? iface.address : host;
-    }, '127.0.0.1');
-    http.listen(PORT, () => {
-        console.log(`server started on http://${localhost}:${PORT}`)
+const ifaces = require('os').networkInterfaces()
+const localhost = Object.keys(ifaces).reduce((host,ifname) => {
+    let iface = ifaces[ifname].find(iface => !('IPv4' !== iface.family || iface.internal !== false))
+    return iface? iface.address : host
+}, '127.0.0.1')
+
+http.listen(PORT, () => {
+    console.log(`server started on http://${localhost}:${PORT}`)
+    initSocket(io)
 })
