@@ -2,7 +2,7 @@ import {io} from "socket.io-client"
 
 export class Socket {
     constructor() {
-        this.socket = io("http://172.26.176.1:80")
+        this.socket = io("http://172.28.0.1:80")
     }
 
     createRoom(roomId, userLogin) {
@@ -12,8 +12,11 @@ export class Socket {
 
     resiveMessage(store) {
         this.socket.on("message", (data) => {
-            data.push(this.getTime())
-            store.commit("pushMessage", data)
+            if (typeof data !== "string") {
+                data.push(this.getTime())
+            } 
+            store.commit("pushMessage", data)           
+            
         })
     }
 

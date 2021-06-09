@@ -13,12 +13,13 @@
       <ul class="messages">
         <li v-for="(item, index) in messages" :key="index" class="message">
           <p 
+            v-if="item['id'] !== undefined"
             class="login" 
             :class="item['id'] === userId ? 'login--active' : ''"
             >{{item["login"]}}:
           </p>
           <p>{{item["message"]}}</p>
-          <p class="time"><small>{{item['time']}}</small></p>
+          <p class="time" v-if="item['id'] !== undefined"><small>{{item['time']}}</small></p>
         </li>
       </ul>
     </div>

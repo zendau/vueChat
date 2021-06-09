@@ -17,13 +17,21 @@ export default createStore({
       state.userId = id
     },
     pushMessage(state, message) {
-      console.log(state.messages)
-      state.messages.push({
-        login: message[0],
-        message: message[1],
-        id: message[3],
-        time: message[4],
-      })
+ 
+      if (typeof message === "string") {
+        state.messages.push({
+          message
+        })
+      } else {
+        state.messages.push({
+          login: message[0],
+          message: message[1],
+          id: message[3],
+          time: message[4],
+        })
+      }
+
+      
     },
     saveUsers(state, users) {
       state.users = users

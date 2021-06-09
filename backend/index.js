@@ -2,7 +2,7 @@ const express = require('express')
 const app = express()
 const http = require('http').Server(app)
 
-const {addUser, getRoomUser} = require("./users")
+const {addUser, getRoomUser, getUserById, userLeaveChat} = require("./users")
 
 const io = require('socket.io')(http, {
     cors: {
@@ -38,6 +38,7 @@ io.on("connection", (socket) => {
         socket.join(user.room)
         io.to(user.room).emit("getUserId", user.id)
         io.to(user.room).emit("getUsers", getRoomUser(user.room))
+        io.to(user.room).emit("message", `${user.login} has join to chat`)  
 
             
         
@@ -46,13 +47,18 @@ io.on("connection", (socket) => {
     socket.on('newMessage', (msg) => {
         console.log(`message ${msg[1]} from user ${msg[0]}, room ${msg[2]}`)
         console.log("msg", msg)
-        io
-            .to(msg[2]+"")
-            .emit("message", msg)  
+        io.to(msg[2]+"").emit("message", msg)  
     })
 
     socket.on('disconnect', () => {
-        console.log('user disconnected');
+        console.log(`user ${socket.id} disconnected`)
+        const user = getUserById(socket.id)
+
+        if (user) {
+            userLeaveChat(user.id)
+            io.to(user.room).emit("message", `${user.login} has left the chat`)  
+            io.to(user.room).emit("getUsers", getRoomUser(user.room))
+        }   
       });
 })
 
