@@ -1,28 +1,44 @@
 <template>
-  <div>
-    <h1>Users online</h1>
-    <p v-for="user in users" :key="user.id">{{user.login}}</p>
-    <h1>Send message</h1>
-    <h2>Hello {{userLogin}}</h2>
-    <h2>Room id - {{roomId}}</h2>
-    <h2>User id - {{userId}}</h2>
-    <input type="text" placeholder="message" v-model="userMessage">
-    <button @click="sendMessage">Send</button>
-    <div v-if="messages.length !== 0">
-      <h1 >Receive message</h1>
-      <ul class="messages">
-        <li v-for="(item, index) in messages" :key="index" class="message">
-          <p 
-            v-if="item['id'] !== undefined"
-            class="login" 
-            :class="item['id'] === userId ? 'login--active' : ''"
-            >{{item["login"]}}:
-          </p>
-          <p>{{item["message"]}}</p>
-          <p class="time" v-if="item['id'] !== undefined"><small>{{item['time']}}</small></p>
-        </li>
+  <div class="chat__container">
+    <section class="section__users">
+      <h1>Users online</h1>
+      <ul class="users__list">
+        <li v-for="user in users" :key="user.id">{{user.login}}</li>
       </ul>
-    </div>
+    </section>
+    <section class="section__chat">
+      <div class="chat__header">
+        <button><span class="material-icons">reorder</span></button>
+        <button><span class="material-icons">logout</span></button>
+        <h2>Room id - {{roomId}}</h2>
+      </div>
+    
+      <div class="chat__messages" v-if="messages.length !== 0">
+        <ul class="messages">
+          <li v-for="(item, index) in messages" :key="index" class="message" :class="item['id'] === userId ? 'message--active' : ''">
+            <div v-if="item['id'] !== undefined" class="message__container">
+              <p 
+                class="login" 
+                >{{item["login"]}}
+              </p>
+              <div class="body__message" :class="item['id'] === userId ? 'message--active' : ''">
+                <p>{{item["message"]}}</p>
+                <p class="time"><small>{{item['time']}}</small></p>
+              </div>
+            </div>
+            <div v-else>
+              <p class="user__enter">{{item["message"]}}</p>
+            </div>
+          </li>
+        </ul>
+      </div>
+
+      <div class="chat__send">
+        <input type="text" placeholder="message" v-model="userMessage">
+        <button @click="sendMessage"><span class="material-icons">send</span></button>
+      </div>
+
+    </section>
   </div>
 </template>
 
@@ -92,26 +108,138 @@ export default {
 
 
 <style lang="scss" scoped>
+
+  @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@500&display=swap');
+  @import url("https://fonts.googleapis.com/icon?family=Material+Icons");
+
+  .chat__container {
+    display: flex;
+  }
+
+  .section {
+    &__users {
+      min-width: 25%;
+      font-family: 'Roboto', sans-serif;
+      background-color: #f6e6e4;
+      height: 100vh;
+
+      h1 {
+        margin-top: 30px;
+        text-align: center;
+      }
+    }
+
+    &__chat {
+      font-family: 'Roboto', sans-serif;
+    }
+  }
+
+  .users__list {
+    list-style: none;
+    padding: 0;
+    li {
+      text-align: center;
+    }
+  }
+
+  .section__chat {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+
+  .chat__header {
+    display: flex;
+    align-items: center;
+    background-color: #ffeedb;
+    height: 10%;
+    width: 100%;
+
+    button {
+      border: none;
+      background-color: inherit;
+      cursor: pointer;
+      min-width: 35px;
+      min-height: 35px;
+      max-height: 35px;
+      padding: 0;
+      margin-right: 20px;
+      span {
+        font-size: 35px;
+      }
+    }
+
+    h2 {
+        margin: 0;
+        font-family: 'Roboto', sans-serif;
+        margin-left: 25px;
+    }
+  }
+
+  .user__enter {
+    text-align: center;
+  }
+
+  .chat__messages {
+    height: 80%;
+  }
+
+  .body__message {
+    display: flex;
+    width: 100%;
+    justify-content: flex-end;
+  }
+
+  .chat__send {
+    height: 10%;
+    font-family: 'Roboto', sans-serif;
+    display: flex;
+    height: 50px;
+    input {
+      width: 85%;
+      font-size: 24px;
+    }
+    button {
+      width: 15%;
+      font-size: 24px;
+      text-align: center;
+    }
+  }
+
+  //
   .messages {
     width: 800px;
     margin: 0 auto;
     display: flex;
     flex-direction: column;
-    align-items: center;
     max-height: 600px;
     overflow-y: auto;
+    list-style: none;
+    padding: 0;
+
   }
   .message {
-    display: flex;
+    
     font-size: 18px;
+    width: 600px;
+    align-self: flex-end;
+    background-color: rgb(201, 201, 201);
+
+    &__container {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+    }
   }
 
   .login {
     margin-right: 15px;
     color: gray;
   }
-  .login--active {
-    color:blue;
+  .message--active {
+    background-color: burlywood;
+    align-items: flex-start;
+    justify-content: flex-start;
   }
 
   .time {

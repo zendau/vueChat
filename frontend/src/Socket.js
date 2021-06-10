@@ -2,7 +2,7 @@ import {io} from "socket.io-client"
 
 export class Socket {
     constructor() {
-        this.socket = io("http://172.28.0.1:80")
+        this.socket = io("http://172.31.48.1:80")
     }
 
     createRoom(roomId, userLogin) {
