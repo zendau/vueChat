@@ -1,12 +1,12 @@
 import {io} from "socket.io-client"
+import CONSTANT from "./constant"
 
 export class Socket {
     constructor() {
-        this.socket = io("http://172.31.48.1:80")
+        this.socket = io(CONSTANT.URL)
     }
 
     createRoom(roomId, userLogin) {
-        console.log("socket", this.socket)
         if (!this.socket.connected) {
             this.reconnect()
         }
@@ -36,7 +36,6 @@ export class Socket {
     getUsers(store) {
         this.socket.on("getUsers", (users) => {
             store.commit("saveUsers", users)
-            console.log(users)
         })
     }
 
@@ -49,7 +48,7 @@ export class Socket {
     }
 
     reconnect() {
-        this.socket = io("http://172.31.48.1:80")
+        this.socket = io(CONSTANT.URL)
     }
 
     getTime() {

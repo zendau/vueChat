@@ -50,7 +50,6 @@ export default {
             } else {
                 
                 if (this.login.length > 0) {
-                    console.log(this.roomId)
                     this.authUser([this.login, this.roomId])
                     this.$router.push("/chat")
                 } else {
@@ -79,7 +78,6 @@ export default {
     $bgcColorForm: #fff5fd;
     $colorForm: #343f56;
 
-    @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@500&display=swap');
     * {
         font-family: 'Roboto', sans-serif;
     }

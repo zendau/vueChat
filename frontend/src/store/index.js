@@ -35,7 +35,6 @@ export default createStore({
     },
     saveUsers(state, users) {
       state.users = users
-      console.log(state.users)
     }
   },
   actions: {
