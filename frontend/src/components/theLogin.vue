@@ -11,8 +11,11 @@
                 <p class="login__error" v-if="errorMessage.length > 0">{{errorMessage}}</p>
                 <p v-if="login.length > 0" class="login__length">{{login.length}} / 12</p>
             </div>
-            <label for="room" class="form__label" v-if="roomId.length > 0">Room id</label>
+            <label for="room" 
+             class="form__label" v-if="roomId.length > 0">Room id</label>
             <input type="text" 
+                class="room-input"
+                :class="[roomId.length > 0 ? 'room-input--active' : '']"
                 id="room" placeholder="Room id" v-model="roomId">
             <button
                 class="login__btn"  
@@ -111,6 +114,8 @@ export default {
             color: #fff;
             border-radius: 5px;
             cursor: pointer;
+            font-size: 14px;
+            line-height: 15px;
             &:hover {
                 transition: .5s;
                 background-color: #325288;
@@ -158,6 +163,14 @@ export default {
 
     }
     
+    .room-input {
+        margin-top: 20px;
+
+        &--active {
+            margin-top: 0;
+        }
+    }
+
     .login-input {
         margin: 24px 0;
     }

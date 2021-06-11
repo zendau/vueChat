@@ -1,6 +1,6 @@
 <template>
   <div class="chat__container">
-    <section class="section__users">
+    <section v-show="sideMenu" class="section__users">
       <h1>Users online</h1>
       <ul class="users__list">
         <li v-for="user in users" :key="user.id">{{user.login}}</li>
@@ -8,25 +8,25 @@
     </section>
     <section class="section__chat">
       <div class="chat__header">
-        <button><span class="material-icons">reorder</span></button>
-        <button><span class="material-icons">logout</span></button>
+        <button @click="sideMenuShow"><span class="material-icons">reorder</span></button>
+        <button @click="exitEvent"><span class="material-icons">logout</span></button>
         <h2>Room id - {{roomId}}</h2>
       </div>
     
-      <div class="chat__messages" v-if="messages.length !== 0">
-        <ul class="messages">
-          <li v-for="(item, index) in messages" :key="index" class="message" :class="item['id'] === userId ? 'message--active' : ''">
-            <div v-if="item['id'] !== undefined" class="message__container">
+      <div class="chat__messages">
+        <ul class="messages" ref="messagesRef">
+          <li v-for="(item, index) in messages" :key="index" class="message">
+            <div v-if="item['id'] !== undefined" class="message__container"  :class="item['id'] === userId ? 'message--active' : ''">
               <p 
                 class="login" 
                 >{{item["login"]}}
               </p>
-              <div class="body__message" :class="item['id'] === userId ? 'message--active' : ''">
-                <p>{{item["message"]}}</p>
+              <div class="body__message">
+                <p class="message__content">{{item["message"]}}</p>
                 <p class="time"><small>{{item['time']}}</small></p>
               </div>
             </div>
-            <div v-else>
+            <div class="message--enter" v-else>
               <p class="user__enter">{{item["message"]}}</p>
             </div>
           </li>
@@ -34,8 +34,8 @@
       </div>
 
       <div class="chat__send">
-        <input type="text" placeholder="message" v-model="userMessage">
-        <button @click="sendMessage"><span class="material-icons">send</span></button>
+        <input type="text" placeholder="Message" v-model.trim="userMessage">
+        <button class="send__btn" @click="sendMessage"><span class="material-icons">send</span></button>
       </div>
 
     </section>
@@ -45,7 +45,7 @@
 <script>
 
 
-import {onMounted, ref, reactive, inject, computed} from "vue"
+import {onMounted, ref, reactive, inject, computed, nextTick} from "vue"
 import {useStore} from "vuex"
 import {useRouter} from "vue-router"
 
@@ -55,9 +55,13 @@ export default {
 
     let socket = null
 
-    const userMessage = ref(null)
+    const userMessage = ref("")
     const store = useStore()
     const router = useRouter()
+
+    const sideMenu = ref(true)
+
+    const messagesRef = ref(null)
 
 
     const messages = reactive(store.state.messages)
@@ -75,19 +79,38 @@ export default {
         socket = inject("SocketClass")
 
         socket.createRoom(roomId, userLogin)
-        socket.resiveMessage(store)
+        socket.resiveMessage(store, function () {
+            return nextTick(() => {
+            const elem = messagesRef.value
+            elem.scrollTo(0, elem.scrollHeight)        
+          })
+        })
         socket.getUserId(userId, store)
         socket.getUsers(store)
       }
-
-     
-
-
     })
 
     function sendMessage() {
-      socket.sendMessage([this.userLogin, this.userMessage, this.roomId, this.userId])
-      this.userMessage = ""
+
+      if (this.userMessage.length > 0) {
+        socket.sendMessage([this.userLogin, this.userMessage, this.roomId, this.userId])
+        this.userMessage = ""
+      }
+    }
+
+
+    function sideMenuShow() {
+      this.sideMenu = !this.sideMenu
+    }
+
+    function exitEvent() {
+      socket.logoutUser()
+      router.push("/")
+      store.state.userLogin = null
+      store.state.userId = null
+      store.state.roomId = null
+      store.state.messages = []
+      store.state.users = []
     }
 
     
@@ -99,7 +122,11 @@ export default {
       messages,
       roomId,
       userId,
-      users: computed(() => store.state.users)
+      users: computed(() => store.state.users),
+      sideMenuShow,
+      sideMenu,
+      messagesRef,
+      exitEvent
     }
   }
 }
@@ -122,6 +149,7 @@ export default {
       font-family: 'Roboto', sans-serif;
       background-color: #f6e6e4;
       height: 100vh;
+      box-shadow: 4px 0px 10px 0px rgba(34, 60, 80, 0.06);
 
       h1 {
         margin-top: 30px;
@@ -131,6 +159,8 @@ export default {
 
     &__chat {
       font-family: 'Roboto', sans-serif;
+      width: 100%;
+      height: 100vh;
     }
   }
 
@@ -152,8 +182,9 @@ export default {
     display: flex;
     align-items: center;
     background-color: #ffeedb;
-    height: 10%;
+    min-height: 10%;
     width: 100%;
+    box-shadow: 0px 5px 10px 0px rgba(34, 60, 80, 0.06);
 
     button {
       border: none;
@@ -178,26 +209,41 @@ export default {
 
   .user__enter {
     text-align: center;
+    margin: 0px;
   }
 
   .chat__messages {
-    height: 80%;
+    max-height: 100%;
+    height: 100%;
+    box-sizing: border-box;
   }
 
   .body__message {
     display: flex;
     width: 100%;
-    justify-content: flex-end;
+    justify-content: space-between;
+    box-sizing: border-box;
+    padding: 5px;
+    p {
+      margin: 0;
+    }
   }
 
   .chat__send {
-    height: 10%;
     font-family: 'Roboto', sans-serif;
     display: flex;
     height: 50px;
+    box-shadow: 0px 0px 17px -2px rgba(34, 60, 80, 0.2);
     input {
       width: 85%;
       font-size: 24px;
+      outline: none;
+      border: 1px solid #f6e6e4;
+      padding: 0 5px;
+      &:focus {
+        border: 2px solid #125d98;
+        
+      }
     }
     button {
       width: 15%;
@@ -208,38 +254,63 @@ export default {
 
   //
   .messages {
-    width: 800px;
-    margin: 0 auto;
+    width: 100%;
+    margin: 0;
     display: flex;
     flex-direction: column;
     max-height: 600px;
     overflow-y: auto;
     list-style: none;
     padding: 0;
+    min-height: 100%;
+    padding-top: 15px;
+    box-sizing: border-box;
 
   }
   .message {
-    
+    margin: 15px;
+    margin-top: 0;
     font-size: 18px;
-    width: 600px;
-    align-self: flex-end;
-    background-color: rgb(201, 201, 201);
+    border-radius: 5px;
+
 
     &__container {
       display: flex;
       flex-direction: column;
-      align-items: flex-end;
+      background-color: rgb(201, 201, 201);
+      margin-left: auto;
+      width: 600px;
+      border-radius: 5px;
+      padding: 5px;
+
     }
   }
 
+  .message--enter {
+    margin: 0 auto
+  }
+
   .login {
+    margin: 5px;
     margin-right: 15px;
-    color: gray;
+    color: #343a40;
   }
   .message--active {
     background-color: burlywood;
-    align-items: flex-start;
-    justify-content: flex-start;
+    margin-right: auto;
+    margin-left: 0;
+  }
+
+  .message__content {
+    word-break: break-all;
+  }
+
+  .send__btn {
+    border: none;
+    background-color: #125d98;
+    color: #fff;
+    cursor: pointer;
+    line-height: 14px;
   }
 
   .time {

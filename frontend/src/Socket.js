@@ -6,17 +6,21 @@ export class Socket {
     }
 
     createRoom(roomId, userLogin) {
+        console.log("socket", this.socket)
+        if (!this.socket.connected) {
+            this.reconnect()
+        }
         this.socket.emit("room", [roomId, userLogin])
     }
 
 
-    resiveMessage(store) {
+    resiveMessage(store, fun) {
         this.socket.on("message", (data) => {
             if (typeof data !== "string") {
                 data.push(this.getTime())
             } 
             store.commit("pushMessage", data)           
-            
+            fun()
         })
     }
 
@@ -38,6 +42,14 @@ export class Socket {
 
     sendMessage(params) {
         this.socket.emit("newMessage", params)
+    }
+
+    logoutUser() {
+        this.socket.emit("logoutUser")
+    }
+
+    reconnect() {
+        this.socket = io("http://172.31.48.1:80")
     }
 
     getTime() {

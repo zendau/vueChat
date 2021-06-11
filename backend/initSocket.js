@@ -7,7 +7,7 @@ module.exports = function(io) {
         console.log(socket.rooms)
 
         socket.on("room", (userData) => {
-
+            
             const user = {
                 id: socket.id,
                 room: userData[0],
@@ -28,6 +28,10 @@ module.exports = function(io) {
             console.log(`message ${msg[1]} from user ${msg[0]}, room ${msg[2]}`)
             console.log("msg", msg)
             io.to(msg[2]+"").emit("message", msg)  
+        })
+
+        socket.on("logoutUser", () => {
+            socket.disconnect()
         })
 
         socket.on('disconnect', () => {
