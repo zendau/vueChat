@@ -4,6 +4,7 @@
   "description": "server for VueChat",
   "main": "index.js",
   "scripts": {
+    "start": "node index.js",
     "serve": "nodemon index.js" 
   },
   "author": "zendau",

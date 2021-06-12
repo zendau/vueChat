@@ -4,11 +4,15 @@ const http = require('http').Server(app)
 
 const initSocket = require("./initSocket")
 
+const path = require('path')
+
 const io = require('socket.io')(http, {
     cors: {
       credentials: true
     }
 })
+
+app.use(express.static('dist'))
 
 app.use(function(req, res, next) {
     res.header("Access-Control-Allow-Origin", "*");
@@ -17,8 +21,14 @@ app.use(function(req, res, next) {
 })
 
 app.get('/', (req, res) => {
-  res.json("ok")
+  res.sendFile(path.join(__dirname,'/dist/index.html'));
+  //res.json("ok")
 });
+
+
+app.get("*", (req, res) => {
+  res.redirect("/")
+})
 
 
 const PORT = process.env.PORT || 80
